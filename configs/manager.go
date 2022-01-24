@@ -8,6 +8,7 @@ import (
 type Manager struct {
 	DBCredentials *dbCredentials
 	HostCredentials *hostCredentials
+	Oauth2Credentials *oauth2Credentials
 }
 
 type  hostCredentials struct {
@@ -20,6 +21,11 @@ type  dbCredentials struct {
 	Name string
 	User string
 	Password string
+}
+
+type  oauth2Credentials struct {
+	ClientID string
+	ClientSecret string
 }
 
 func (m *Manager) EnvInitialise(path string) {
@@ -41,6 +47,11 @@ func (m *Manager) EnvInitialise(path string) {
 
 	m.HostCredentials = &hostCredentials{
 		PORT: os.Getenv("PORT"),
+	}
+
+	m.Oauth2Credentials = &oauth2Credentials{
+		ClientID: os.Getenv("OAUTH2_GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("OAUTH2_GOOGLE_CLIENT_SECRET"),
 	}
 
 }
