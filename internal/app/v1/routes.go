@@ -14,9 +14,15 @@ func (a *api) HelloRouteInitialise()  {
 }
 
 func (a *api) UserRoutesInitialize() {
-	uc := a.controllers.User
-	user := a.Router.Group("/user")
+	//uc := a.controllers.User
+	//user := a.Router.Group("/user")
+}
+
+func (a *api) AuthRoutesInitialize()  {
+	ac := a.controllers.Auth
+	auth := a.Router.Group("/auth")
 	{
-		user.GET("/url", uc.URL())
+		auth.GET("/url", ac.URL())
+		auth.GET("/login", ac.Login())
 	}
 }
