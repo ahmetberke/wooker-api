@@ -7,20 +7,23 @@ import (
 	"github.com/ahmetberke/wooker-api/internal/auth"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"time"
 )
 
 type api struct {
 	PORT string
+	DB *gorm.DB
 	Engine *gin.Engine
 	Router *gin.RouterGroup
 	controllers *controllers.Controller
 }
 
-func NewAPI(config *configs.Manager) (*api, error)  {
+func NewAPI(config *configs.Manager, db *gorm.DB) (*api, error)  {
 
 	a := api{
 		PORT: config.HostCredentials.PORT,
+		DB: db,
 		Engine: gin.Default(),
 	}
 

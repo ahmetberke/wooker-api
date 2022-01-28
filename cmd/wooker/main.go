@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ahmetberke/wooker-api/configs"
 	api "github.com/ahmetberke/wooker-api/internal/app/v1"
+	"github.com/ahmetberke/wooker-api/internal/database"
 )
 
 var config *configs.Manager
@@ -13,7 +14,20 @@ func init()  {
 }
 
 func main() {
-	a, err := api.NewAPI(config)
+	dc := config.DBCredentials
+	db, err := database.ConnectToDB(&database.DBConfig{
+		Host: dc.Host,
+		Port: dc.Port,
+		Name: dc.Name,
+		User: dc.User,
+		Password: dc.Password,
+		SSLMode: dc.SSLMode,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	a, err := api.NewAPI(config, db)
 	if err != nil {
 		panic(err)
 	}

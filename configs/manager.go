@@ -21,6 +21,7 @@ type  dbCredentials struct {
 	Name string
 	User string
 	Password string
+	SSLMode string
 }
 
 type  oauth2Credentials struct {
@@ -43,6 +44,7 @@ func (m *Manager) EnvInitialise(path string) {
 		 Name: os.Getenv("DB_NAME"),
 		 User: os.Getenv("DB_USER"),
 		 Password: os.Getenv("DB_PASSWORD"),
+		 SSLMode: os.Getenv("DB_SSL_MODE"),
 	}
 
 	m.HostCredentials = &hostCredentials{
