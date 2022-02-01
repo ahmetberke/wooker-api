@@ -1,6 +1,9 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/ahmetberke/wooker-api/internal/app/v1/controllers"
+	"github.com/gin-gonic/gin"
+)
 
 func (a *api) HelloRouteInitialise()  {
 	hello := a.Router.Group("/hello")
@@ -13,16 +16,10 @@ func (a *api) HelloRouteInitialise()  {
 	}
 }
 
-func (a *api) UserRoutesInitialize() {
-	//uc := a.controllers.User
-	//user := a.Router.Group("/user")
-}
-
-func (a *api) AuthRoutesInitialize()  {
-	ac := a.controllers.Auth
-	auth := a.Router.Group("/auth")
+func (a *api) UserRoutesInitialize(uc *controllers.User) {
+	user := a.Router.Group("/user")
 	{
-		auth.GET("/url", ac.URL())
-		auth.GET("/login", ac.Login())
+		user.GET("/auth", uc.Auth())
+		user.GET("/url", uc.URL())
 	}
 }
