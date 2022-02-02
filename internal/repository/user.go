@@ -16,61 +16,61 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 func (u *UserRepository) Save(user *models.User) (*models.User, error) {
-	result := u.db.Create(&user)
-	if result.Error != nil {
-		return nil, result.Error
+	err := u.db.Create(&user).Error
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
 
 func (u *UserRepository) FindByUsername(username string) (*models.User, error) {
 	var user *models.User
-	result := u.db.Where("username = ?", username).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
+	err := u.db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
 
 func (u *UserRepository) MultiFindByUsername(username string) ([]*models.User, error)  {
 	var users []*models.User
-	result := u.db.Find(users,&models.User{Username: username})
-	if result.Error != nil {
-		return nil, result.Error
+	err := u.db.Find(users,&models.User{Username: username}).Error
+	if err != nil {
+		return nil, err
 	}
 	return users, nil
 }
 
 func (u *UserRepository) FindByID(id uint) (*models.User, error) {
 	var user *models.User
-	result := u.db.Where("id = ?", id).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
+	err := u.db.Where("id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
 
 func (u *UserRepository) FindByGoogleID(id string) (*models.User, error) {
 	var user *models.User
-	result := u.db.Where("google_id = ?", id).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
+	err := u.db.Where("google_id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
 
 func (u *UserRepository) Update(user *models.User) (*models.User, error)  {
-	result := u.db.Model(&user).Updates(user)
-	if result.Error != nil {
-		return nil, result.Error
+	err := u.db.Model(&user).Updates(user).Error
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
 
 func (u *UserRepository) Delete(id uint) error {
-	result := u.db.Delete(&models.User{ID:id})
-	if result.Error != nil {
-		return result.Error
+	err := u.db.Delete(&models.User{ID:id}).Error
+	if err != nil {
+		return err
 	}
 	return nil
 }
