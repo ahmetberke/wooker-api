@@ -5,10 +5,13 @@ import (
 	"os"
 )
 
-type Manager struct {
+var Manager manager
+
+type manager struct {
 	DBCredentials *dbCredentials
 	HostCredentials *hostCredentials
 	Oauth2Credentials *oauth2Credentials
+	JWTSecretKey string
 }
 
 type  hostCredentials struct {
@@ -29,7 +32,7 @@ type  oauth2Credentials struct {
 	ClientSecret string
 }
 
-func (m *Manager) EnvInitialise(path string) {
+func (m *manager) EnvInitialise(path string) {
 
 	// migrating .env queries to OS Environment
 	err := godotenv.Load(path)
@@ -55,5 +58,7 @@ func (m *Manager) EnvInitialise(path string) {
 		ClientID: os.Getenv("OAUTH2_GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("OAUTH2_GOOGLE_CLIENT_SECRET"),
 	}
+
+	m.JWTSecretKey = os.Getenv("JWT_SECRET_KEY")
 
 }

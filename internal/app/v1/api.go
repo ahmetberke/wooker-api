@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ahmetberke/wooker-api/configs"
 	"github.com/ahmetberke/wooker-api/internal/app/v1/controllers"
+	"github.com/ahmetberke/wooker-api/internal/app/v1/middleware"
 	"github.com/ahmetberke/wooker-api/internal/auth"
 	"github.com/ahmetberke/wooker-api/internal/repository"
 	"github.com/ahmetberke/wooker-api/internal/service"
@@ -20,10 +21,10 @@ type api struct {
 	Router *gin.RouterGroup
 }
 
-func NewAPI(config *configs.Manager, db *gorm.DB) (*api, error)  {
+func NewAPI(db *gorm.DB) (*api, error)  {
 
 	a := api{
-		PORT: config.HostCredentials.PORT,
+		PORT: configs.Manager.HostCredentials.PORT,
 		DB: db,
 		Engine: gin.Default(),
 	}
@@ -38,7 +39,9 @@ func NewAPI(config *configs.Manager, db *gorm.DB) (*api, error)  {
 	}))
 	a.Router = a.Engine.Group("/v1")
 
-	a.InitUser(config.Oauth2Credentials.ClientID, config.Oauth2Credentials.ClientSecret)
+	a.Router.Use(middleware.Verificate)
+
+	a.InitUser(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret)
 
 	return &a, nil
 }

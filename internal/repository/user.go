@@ -32,9 +32,9 @@ func (u *UserRepository) FindByUsername(username string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) MultiFindByUsername(username string) ([]*models.User, error)  {
-	var users []*models.User
-	err := u.db.Find(users,&models.User{Username: username}).Error
+func (u *UserRepository) MultiFindByUsername(username string) ([]models.User, error)  {
+	var users []models.User
+	err := u.db.Where("username = ?", username).Find(&users).Error
 	if err != nil {
 		return nil, err
 	}

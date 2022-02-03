@@ -8,18 +8,20 @@ import (
 type User struct {
 	gorm.Model
 	ID uint `json:"id" gorm:"primaryKey"`
-	GoogleID string `json:"google_id" gorm:"primaryKey"`
-	Username string `json:"username" gorm:"primaryKey"`
+	GoogleID string `json:"google_id" gorm:"unique"`
+	Username string `json:"username" gorm:"unique"`
+	IsAdmin bool `json:"is_admin"`
 	Email string `json:"email" gorm:"primaryKey"`
 	EmailVerified bool `json:"email_verified"`
 	Picture string `json:"picture"`
-	CreatedDate time.Time `json:"created_date"`
-	LastUpdatedDate time.Time `json:"last_updated_date"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type  UserDTO struct {
 	ID uint `json:"id"`
 	Username string `json:"username"`
+	IsAdmin bool `json:"is_admin"`
 	Email string `json:"email"`
 	EmailVerified bool `json:"email_verified"`
 	Picture string `json:"picture"`

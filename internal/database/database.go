@@ -34,12 +34,6 @@ func migrations(db *gorm.DB)  {
 	if err != nil {
 		log.Printf("[ERROR] on db migrations (model: user)")
 	}
-	log.Printf("Migrated User Model")
-	err = db.AutoMigrate(&models.Session{})
-	if err != nil {
-		log.Printf("[ERROR] on db migrations (model: session)")
-	}
-	log.Printf("Migrated Session Model")
 	log.Printf("Migrations finished")
 }
 

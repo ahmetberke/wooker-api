@@ -6,15 +6,14 @@ import (
 	"github.com/ahmetberke/wooker-api/internal/database"
 )
 
-var config *configs.Manager
 
 func init()  {
-	config = &configs.Manager{}
-	config.EnvInitialise(".env")
+
+	configs.Manager.EnvInitialise(".env")
 }
 
 func main() {
-	dc := config.DBCredentials
+	dc := configs.Manager.DBCredentials
 	db, err := database.ConnectToDB(&database.DBConfig{
 		Host: dc.Host,
 		Port: dc.Port,
@@ -27,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	a, err := api.NewAPI(config, db)
+	a, err := api.NewAPI(db)
 	if err != nil {
 		panic(err)
 	}

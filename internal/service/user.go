@@ -21,7 +21,7 @@ func (u *UserService) FindByUsername(username string) (*models.User, error)  {
 	return u.repository.FindByUsername(username)
 }
 
-func (u *UserService) MultipleFindByUsername(username string) ([]*models.User, error)  {
+func (u *UserService) MultipleFindByUsername(username string) ([]models.User, error)  {
 	return u.repository.MultiFindByUsername(username)
 }
 

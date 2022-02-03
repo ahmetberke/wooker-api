@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	cloud.google.com/go v0.65.0 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.7.7 // indirect
@@ -39,4 +40,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/postgres v1.2.3 // indirect
 	gorm.io/gorm v1.22.5 // indirect
+	gorm.io/plugin/soft_delete v1.0.5 // indirect
 )
