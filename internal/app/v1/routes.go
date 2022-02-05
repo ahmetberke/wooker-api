@@ -17,7 +17,7 @@ func (a *api) HelloRouteInitialise()  {
 	}
 }
 
-func (a *api) UserRoutesInitialize(uc *controllers.User, au *middleware.Auth) {
+func (a *api) UserRoutesInitialize(uc *controllers.UserController, au *middleware.Auth) {
 	user := a.Router.Group("/user")
 	{
 		user.GET("/",au.AdminAuthorization, uc.All)

@@ -53,7 +53,7 @@ func (a *api) InitUser(gClientID string, gClientSecret string, authMiddleware *m
 	repo := repository.NewUserRepository(a.DB)
 	serv := service.NewUserSercive(repo)
 	google := auth.NewOauth2(gClientID, gClientSecret)
-	userController := controllers.User{Service: serv, GoogleAuth: google}
+	userController := controllers.UserController{Service: serv, GoogleAuth: google}
 	a.UserRoutesInitialize(&userController, authMiddleware)
 }
 

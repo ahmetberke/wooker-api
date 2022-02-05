@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-type User struct {
+type UserController struct {
 	GoogleAuth *auth.Google
 	Service *service.UserService
 }
@@ -26,14 +26,14 @@ type UserResponse struct {
 	Data interface{} `json:"data"`
 }
 
-func (u *User) URL(c *gin.Context) {
+func (u *UserController) URL(c *gin.Context) {
 	url := u.GoogleAuth.GenerateURL()
 	c.JSON(http.StatusOK, gin.H{
 		"url":url,
 	})
 }
 
-func (u *User) Auth(c *gin.Context) {
+func (u *UserController) Auth(c *gin.Context) {
 
 	// If user already logged in, return bad request error because this request is unnecessary
 	_, isExists := c.Get("x-user-id")
@@ -123,7 +123,7 @@ func (u *User) Auth(c *gin.Context) {
 	return
 }
 
-func (u *User) Get(c *gin.Context)  {
+func (u *UserController) Get(c *gin.Context)  {
 	username := c.Param("username")
 
 	// get user and if there is an error return bad request
@@ -164,7 +164,7 @@ func (u *User) Get(c *gin.Context)  {
 	return
 }
 
-func (u *User) All(c *gin.Context)  {
+func (u *UserController) All(c *gin.Context)  {
 	var limit int = 10
 	limit, err := strconv.Atoi(c.Param("limit"))
 	if err != nil {
@@ -190,6 +190,5 @@ func (u *User) All(c *gin.Context)  {
 		Error:   "",
 		Data:    usersDTO,
 	})
-
 
 }
