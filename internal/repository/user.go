@@ -59,6 +59,15 @@ func (u *UserRepository) FindByGoogleID(id string) (*models.User, error) {
 	return user, nil
 }
 
+func (u *UserRepository) GetAll(limit int) ([]models.User, error)  {
+	var users []models.User
+	err := u.db.Limit(limit).Find(&users).Error
+	if err != nil {
+		return users, err
+	}
+	return users, nil
+}
+
 func (u *UserRepository) Update(user *models.User) (*models.User, error)  {
 	err := u.db.Model(&user).Updates(user).Error
 	if err != nil {

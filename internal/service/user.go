@@ -33,6 +33,10 @@ func (u *UserService) FindByGoogleID(id string) (*models.User, error)  {
 	return u.repository.FindByGoogleID(id)
 }
 
+func (u *UserService) GetAll(limit int) ([]models.User, error)  {
+	return u.repository.GetAll(limit)
+}
+
 func (u *UserService) Update(user *models.User) (*models.User, error) {
 	return u.repository.Update(user)
 }
