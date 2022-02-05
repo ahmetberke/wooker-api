@@ -39,19 +39,22 @@ func NewAPI(db *gorm.DB) (*api, error)  {
 	}))
 	a.Router = a.Engine.Group("/v1")
 
-	a.Router.Use(middleware.Verificate)
+	uRepoForAuth := repository.NewUserRepository(a.DB)
+	uServiceForAuth := service.NewUserSercive(uRepoForAuth)
+	authM := middleware.NewAuthMiddleware(uServiceForAuth)
+	a.Router.Use(authM.Authorization)
 
-	a.InitUser(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret)
+	a.InitUser(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret, authM)
 
 	return &a, nil
 }
 
-func (a *api) InitUser(gClientID string, gClientSecret string)  {
+func (a *api) InitUser(gClientID string, gClientSecret string, authMiddleware *middleware.Auth)  {
 	repo := repository.NewUserRepository(a.DB)
 	serv := service.NewUserSercive(repo)
 	google := auth.NewOauth2(gClientID, gClientSecret)
 	userController := controllers.User{Service: serv, GoogleAuth: google}
-	a.UserRoutesInitialize(&userController)
+	a.UserRoutesInitialize(&userController, authMiddleware)
 }
 
 func (a *api) Run() {
