@@ -37,8 +37,8 @@ func (u *UserService) GetAll(limit int) ([]models.User, error)  {
 	return u.repository.GetAll(limit)
 }
 
-func (u *UserService) Update(user *models.User) (*models.User, error) {
-	return u.repository.Update(user)
+func (u *UserService) UpdateByUsername(username string, user *models.User) (*models.User, error) {
+	return u.repository.UpdateByUsername(username, user)
 }
 
 func (u *UserService) Delete(id uint) error  {

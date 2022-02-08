@@ -68,8 +68,8 @@ func (u *UserRepository) GetAll(limit int) ([]models.User, error)  {
 	return users, nil
 }
 
-func (u *UserRepository) Update(user *models.User) (*models.User, error)  {
-	err := u.db.Model(&user).Updates(user).Error
+func (u *UserRepository) UpdateByUsername(username string, user *models.User) (*models.User, error)  {
+	err := u.db.Model(&user).Where("username = ?", username).Updates(user).Error
 	if err != nil {
 		return nil, err
 	}

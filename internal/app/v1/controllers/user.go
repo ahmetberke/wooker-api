@@ -37,8 +37,8 @@ func (u *UserController) Auth(c *gin.Context) {
 
 	// If user already logged in, return bad request error because this request is unnecessary
 	userI, isExists := c.Get("x-user")
-	loggedUser := userI.(*models.User)
 	if isExists {
+		loggedUser := userI.(*models.User)
 		log.Printf("id: %v, username: %v", loggedUser.ID, loggedUser.Username)
 		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
 			Success: false,
@@ -215,9 +215,8 @@ func (u *UserController) Update(c *gin.Context) {
 	}
 
 	user := models.ToUser(&userDTO)
-	user.Username = username
 
-	updatedUser, err := u.Service.Update(user)
+	updatedUser, err := u.Service.UpdateByUsername(username, user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, UserResponse{
 			Success: false,
