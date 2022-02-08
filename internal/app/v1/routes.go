@@ -2,7 +2,6 @@ package api
 
 import (
 	"github.com/ahmetberke/wooker-api/internal/app/v1/controllers"
-	"github.com/ahmetberke/wooker-api/internal/app/v1/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,12 +16,13 @@ func (a *api) HelloRouteInitialise()  {
 	}
 }
 
-func (a *api) UserRoutesInitialize(uc *controllers.UserController, au *middleware.Auth) {
+func (a *api) UserRoutesInitialize(uc *controllers.UserController) {
 	user := a.Router.Group("/user")
 	{
-		user.GET("/",au.AdminAuthorization, uc.All)
+		user.GET("/", uc.GoogleAuth.IsAdmin ,uc.All)
 		user.GET("/auth", uc.Auth)
 		user.GET("/url", uc.URL)
 		user.GET("/:username", uc.Get)
+		user.PUT("/:username", uc.Update)
 	}
 }

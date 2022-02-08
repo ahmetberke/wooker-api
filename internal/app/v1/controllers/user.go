@@ -3,13 +3,13 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"github.com/ahmetberke/wooker-api/internal/app/v1/middleware"
 	"github.com/ahmetberke/wooker-api/internal/auth"
 	"github.com/ahmetberke/wooker-api/internal/models"
 	"github.com/ahmetberke/wooker-api/internal/service"
 	"github.com/ahmetberke/wooker-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,22 +36,34 @@ func (u *UserController) URL(c *gin.Context) {
 func (u *UserController) Auth(c *gin.Context) {
 
 	// If user already logged in, return bad request error because this request is unnecessary
-	_, isExists := c.Get("x-user-id")
+	userI, isExists := c.Get("x-user")
+	loggedUser := userI.(*models.User)
 	if isExists {
-		c.JSON(http.StatusBadRequest, UserResponse{
+		log.Printf("id: %v, username: %v", loggedUser.ID, loggedUser.Username)
+		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
 			Success: false,
 			Error:   "user is already logged in",
 			Data:    nil,
 		})
+		return
 	}
 
 	code := c.Query("code")
 	state := c.Query("state")
 
 	// pulling the user data using state and code values from google services
-	gresp, err := u.GoogleAuth.GetUserData(state, code)
+	token, err := u.GoogleAuth.GetToken(state, code)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, UserResponse{
+		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
+			Success: false,
+			Error:   "something is wrong",
+			Data:    nil,
+		})
+		return
+	}
+	gresp, err := u.GoogleAuth.GetUserData(token.AccessToken)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
 			Success: false,
 			Error:   "something is wrong",
 			Data:    nil,
@@ -62,16 +74,12 @@ func (u *UserController) Auth(c *gin.Context) {
 	// if the user already registered, it is just authorized
 	cUser, err := u.Service.FindByGoogleID(gresp.ID)
 	if err == nil {
-		token, err := middleware.Authenticate(cUser)
-		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-		}
 		c.JSON(http.StatusOK, UserResponse{
 			Success: true,
 			Error:   "",
 			Data:    gin.H{
 				"user" : models.ToUserDTO(cUser),
-				"token" : token,
+				"token" : token.AccessToken,
 			},
 		})
 		return
@@ -101,25 +109,23 @@ func (u *UserController) Auth(c *gin.Context) {
 	// saving user to database
 	okUser, err := u.Service.Save(&user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, UserResponse{
+		c.AbortWithStatusJSON(http.StatusInternalServerError, UserResponse{
 			Success: false,
 			Error:   "something is wrong",
 			Data:    nil,
 		})
 		return
 	}
-	token, err := middleware.Authenticate(&user)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-	}
+
 	c.JSON(http.StatusCreated, UserResponse{
 		Success: true,
 		Error:   "",
 		Data:    gin.H{
 			"user" : models.ToUserDTO(okUser),
-			"token" : token,
+			"token" : token.AccessToken,
 		},
 	})
+
 	return
 }
 
@@ -130,14 +136,14 @@ func (u *UserController) Get(c *gin.Context)  {
 	user, err := u.Service.FindByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, UserResponse{
+			c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
 				Success: false,
 				Error:   "user not found",
 				Data:    nil,
 			})
 			return
 		}
-		c.JSON(http.StatusBadRequest, UserResponse{
+		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
 			Success: false,
 			Error:   "something is wrong",
 			Data:    nil,
@@ -173,11 +179,12 @@ func (u *UserController) All(c *gin.Context)  {
 
 	users, err := u.Service.GetAll(limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, UserResponse{
+		c.AbortWithStatusJSON(http.StatusInternalServerError, UserResponse{
 			Success: false,
 			Error:   "something is wrong",
 			Data:    nil,
 		})
+		return
 	}
 
 	var usersDTO []models.UserDTO
@@ -191,4 +198,38 @@ func (u *UserController) All(c *gin.Context)  {
 		Data:    usersDTO,
 	})
 
+}
+
+func (u *UserController) Update(c *gin.Context) {
+	username := c.Param("username")
+
+	var userDTO models.UserDTO
+	err := c.ShouldBindJSON(&userDTO)
+	if err  != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
+			Success: false,
+			Error:   "cannot bind json to object",
+			Data:    nil,
+		})
+		return
+	}
+
+	user := models.ToUser(&userDTO)
+	user.Username = username
+
+	updatedUser, err := u.Service.Update(user)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, UserResponse{
+			Success: false,
+			Error:   "cannot user update",
+			Data:    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, UserResponse{
+		Success: true,
+		Error:   "",
+		Data:    models.ToUserDTO(updatedUser),
+	})
 }

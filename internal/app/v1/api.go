@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ahmetberke/wooker-api/configs"
 	"github.com/ahmetberke/wooker-api/internal/app/v1/controllers"
-	"github.com/ahmetberke/wooker-api/internal/app/v1/middleware"
 	"github.com/ahmetberke/wooker-api/internal/auth"
 	"github.com/ahmetberke/wooker-api/internal/repository"
 	"github.com/ahmetberke/wooker-api/internal/service"
@@ -39,22 +38,16 @@ func NewAPI(db *gorm.DB) (*api, error)  {
 	}))
 	a.Router = a.Engine.Group("/v1")
 
-	uRepoForAuth := repository.NewUserRepository(a.DB)
-	uServiceForAuth := service.NewUserSercive(uRepoForAuth)
-	authM := middleware.NewAuthMiddleware(uServiceForAuth)
-	a.Router.Use(authM.Authorization)
+	userRepository := repository.NewUserRepository(a.DB)
+	userService := service.NewUserSercive(userRepository)
 
-	a.InitUser(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret, authM)
+	oauth2 := auth.NewOauth2(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret, userService)
+	a.Router.Use(oauth2.Authorization)
+
+	userController := controllers.UserController{Service: userService, GoogleAuth: oauth2}
+	a.UserRoutesInitialize(&userController)
 
 	return &a, nil
-}
-
-func (a *api) InitUser(gClientID string, gClientSecret string, authMiddleware *middleware.Auth)  {
-	repo := repository.NewUserRepository(a.DB)
-	serv := service.NewUserSercive(repo)
-	google := auth.NewOauth2(gClientID, gClientSecret)
-	userController := controllers.UserController{Service: serv, GoogleAuth: google}
-	a.UserRoutesInitialize(&userController, authMiddleware)
 }
 
 func (a *api) Run() {
