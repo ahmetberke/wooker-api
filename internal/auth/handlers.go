@@ -90,3 +90,22 @@ func (g Google) IsAdmin(c *gin.Context)  {
 	c.Next()
 
 }
+
+func (g Google) IsAdminOrLoggedUser(c *gin.Context)  {
+
+	username := c.Param("username")
+
+	userI, isExist := c.Get("x-user")
+	if !isExist {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	loggedUser := userI.(*models.User)
+	if !loggedUser.IsAdmin && (loggedUser.Username != username) {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
+
+	c.Next()
+
+}

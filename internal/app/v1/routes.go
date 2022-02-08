@@ -23,6 +23,6 @@ func (a *api) UserRoutesInitialize(uc *controllers.UserController) {
 		user.GET("/auth", uc.Auth)
 		user.GET("/url", uc.URL)
 		user.GET("/:username", uc.Get)
-		user.PUT("/:username", uc.Update)
+		user.PUT("/:username", uc.GoogleAuth.IsAdminOrLoggedUser, uc.Update)
 	}
 }
