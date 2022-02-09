@@ -25,6 +25,7 @@ func ConnectToDB(config *DBConfig) (*gorm.DB, error){
 	}
 	log.Printf("Connect to database, on %s:%s", config.Host, config.Port)
 	migrations(db)
+	afterConnectionWorks(db)
 	return db, err
 }
 
@@ -34,6 +35,14 @@ func migrations(db *gorm.DB)  {
 	if err != nil {
 		log.Printf("[ERROR] on db migrations (model: user)")
 	}
+	err = db.AutoMigrate(&models.Language{})
+	if err != nil {
+		log.Printf("[ERROR] on db migrations (model: language)")
+	}
 	log.Printf("Migrations finished")
+}
+
+func afterConnectionWorks(db *gorm.DB)  {
+	//ImplementLanguages("./internal/database/language.json", db)
 }
 
