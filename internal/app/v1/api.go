@@ -39,7 +39,7 @@ func NewAPI(db *gorm.DB) (*api, error)  {
 	a.Router = a.Engine.Group("/v1")
 
 	userRepository := repository.NewUserRepository(a.DB)
-	userService := service.NewUserSercive(userRepository)
+	userService := service.NewUserService(userRepository)
 
 	oauth2 := auth.NewOauth2(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret, userService)
 	a.Router.Use(oauth2.Authorization)

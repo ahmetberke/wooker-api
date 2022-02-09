@@ -6,7 +6,6 @@ import (
 	"github.com/ahmetberke/wooker-api/internal/models"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -35,7 +34,6 @@ func (g Google) GetUserData(accessToken string) (*UserResponse, error) {
 	resp, err := http.Get(g.DataURL + accessToken)
 
 	if err != nil {
-		log.Printf("2")
 		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
 	}
 
@@ -46,12 +44,10 @@ func (g Google) GetUserData(accessToken string) (*UserResponse, error) {
 	var userResponse UserResponse
 	err = json.NewDecoder(resp.Body).Decode(&userResponse)
 	if err != nil {
-		log.Printf("3")
 		return &userResponse, fmt.Errorf("failed decoding user info: %s", err.Error())
 	}
 
 	if userResponse.Error != nil {
-		log.Printf("5")
 		return &userResponse, fmt.Errorf("%s", userResponse.Error.Message)
 	}
 

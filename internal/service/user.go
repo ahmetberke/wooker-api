@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/ahmetberke/wooker-api/internal/models"
 	"github.com/ahmetberke/wooker-api/internal/repository"
 )
@@ -9,7 +10,7 @@ type UserService struct {
 	repository *repository.UserRepository
 }
 
-func NewUserSercive(repo *repository.UserRepository) *UserService {
+func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{repository: repo}
 }
 
@@ -38,6 +39,16 @@ func (u *UserService) GetAll(limit int) ([]models.User, error)  {
 }
 
 func (u *UserService) UpdateByUsername(username string, user *models.User) (*models.User, error) {
+	if username == user.Username {
+		return nil, fmt.Errorf("the username is already the same")
+	}
+
+	user.ID = 0
+	user.Email = ""
+	user.EmailVerified = false
+	user.IsAdmin = false
+	user.Picture = ""
+
 	return u.repository.UpdateByUsername(username, user)
 }
 

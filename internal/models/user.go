@@ -32,6 +32,7 @@ func ToUser(userDTO *UserDTO) *User {
 		Email: userDTO.Email,
 		EmailVerified: userDTO.EmailVerified,
 		Picture: userDTO.Picture,
+		IsAdmin: userDTO.IsAdmin,
 	}
 }
 
@@ -42,5 +43,6 @@ func ToUserDTO(user *User) *UserDTO {
 		Email: user.Email,
 		EmailVerified: user.EmailVerified,
 		Picture: user.Picture,
+		IsAdmin: user.IsAdmin,
 	}
 }

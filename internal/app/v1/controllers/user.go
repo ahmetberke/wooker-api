@@ -231,4 +231,5 @@ func (u *UserController) Update(c *gin.Context) {
 		Error:   "",
 		Data:    models.ToUserDTO(updatedUser),
 	})
+
 }
