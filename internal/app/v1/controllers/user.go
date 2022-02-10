@@ -3,13 +3,14 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"github.com/ahmetberke/wooker-api/internal/app/v1/errorss"
+	"github.com/ahmetberke/wooker-api/internal/app/v1/response"
 	"github.com/ahmetberke/wooker-api/internal/auth"
 	"github.com/ahmetberke/wooker-api/internal/models"
 	"github.com/ahmetberke/wooker-api/internal/service"
 	"github.com/ahmetberke/wooker-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,31 +21,26 @@ type UserController struct {
 	Service *service.UserService
 }
 
-type UserResponse struct {
-	Success bool `json:"success"`
-	Error string `json:"error"`
-	Data interface{} `json:"data"`
-}
-
 func (u *UserController) URL(c *gin.Context) {
 	url := u.GoogleAuth.GenerateURL()
-	c.JSON(http.StatusOK, gin.H{
-		"url":url,
-	})
+
+	var resp response.AnyResponse
+	resp.Code = http.StatusOK
+	resp.Data = map[string]string{"url" : url}
+
+	c.JSON(resp.Code, resp)
 }
 
 func (u *UserController) Auth(c *gin.Context) {
 
+	var resp response.AuthResponse
+
 	// If user already logged in, return bad request error because this request is unnecessary
-	userI, isExists := c.Get("x-user")
+	_, isExists := c.Get("x-user")
 	if isExists {
-		loggedUser := userI.(*models.User)
-		log.Printf("id: %v, username: %v", loggedUser.ID, loggedUser.Username)
-		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
-			Success: false,
-			Error:   "user is already logged in",
-			Data:    nil,
-		})
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.AlreadyLoggedIn
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
 
@@ -54,46 +50,43 @@ func (u *UserController) Auth(c *gin.Context) {
 	// pulling the user data using state and code values from google services
 	token, err := u.GoogleAuth.GetToken(state, code)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
-			Success: false,
-			Error:   "something is wrong",
-			Data:    nil,
-		})
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.CannotGetGoogleToken
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
-	gresp, err := u.GoogleAuth.GetUserData(token.AccessToken)
+
+	googleResponse, err := u.GoogleAuth.GetUserData(token.AccessToken)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
-			Success: false,
-			Error:   "something is wrong",
-			Data:    nil,
-		})
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.CannotRetrieveDataFromGoogle
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
 
 	// if the user already registered, it is just authorized
-	cUser, err := u.Service.FindByGoogleID(gresp.ID)
+	cUser, err := u.Service.FindByGoogleID(googleResponse.ID)
 	if err == nil {
-		c.JSON(http.StatusOK, UserResponse{
-			Success: true,
-			Error:   "",
-			Data:    gin.H{
-				"user" : models.ToUserDTO(cUser),
-				"token" : token.AccessToken,
-			},
-		})
+
+		resp.Code = http.StatusOK
+		resp.Token = token.AccessToken
+		resp.User = models.ToUserDTO(cUser)
+		resp.LoggedIn = true
+
+		c.AbortWithStatusJSON(resp.Code, resp)
+
 		return
 	}
 
 	// Creating and saving new user
 	user := models.User{
-		GoogleID: gresp.ID,
-		Email: gresp.Email,
-		EmailVerified: gresp.VerifiedEmail,
-		Picture: gresp.Picture,
+		GoogleID: googleResponse.ID,
+		Email: googleResponse.Email,
+		EmailVerified: googleResponse.VerifiedEmail,
+		Picture: googleResponse.Picture,
 	}
 
-	user.Username = utils.GenerateUsernameFromEmail(gresp.Email)
+	user.Username = utils.GenerateUsernameFromEmail(googleResponse.Email)
 
 	// set created and updated times
 	t := time.Now()
@@ -109,69 +102,67 @@ func (u *UserController) Auth(c *gin.Context) {
 	// saving user to database
 	okUser, err := u.Service.Save(&user)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, UserResponse{
-			Success: false,
-			Error:   "something is wrong",
-			Data:    nil,
-		})
+		resp.Code = http.StatusInternalServerError
+		resp.Error = errorss.UnableUserSaveToDB
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
 
-	c.JSON(http.StatusCreated, UserResponse{
-		Success: true,
-		Error:   "",
-		Data:    gin.H{
-			"user" : models.ToUserDTO(okUser),
-			"token" : token.AccessToken,
-		},
-	})
+	resp.Code = http.StatusOK
+	resp.Token = token.AccessToken
+	resp.LoggedIn = true
+	resp.User = models.ToUserDTO(okUser)
+
+	c.JSON(resp.Code, resp)
 
 	return
 }
 
 func (u *UserController) Get(c *gin.Context)  {
+
+	var resp response.UserResponse
+
 	username := c.Param("username")
 
 	// get user and if there is an error return bad request
 	user, err := u.Service.FindByUsername(username)
 	if err != nil {
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
-				Success: false,
-				Error:   "user not found",
-				Data:    nil,
-			})
+			resp.Code = http.StatusBadRequest
+			resp.Error = errorss.UserNotFound
+			c.AbortWithStatusJSON(resp.Code, resp)
 			return
 		}
-		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
-			Success: false,
-			Error:   "something is wrong",
-			Data:    nil,
-		})
+
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.SomethingIsWrong
+		c.AbortWithStatusJSON(resp.Code, resp)
+
 		return
 	}
 
 	// checking if signed user is the requested user
-	var logged_in bool = false
-	id := c.GetString("x-user-id")
-	if id == strconv.Itoa(int(user.ID)) {
-		logged_in = true
+	userI, isExists := c.Get("x-user")
+	if isExists {
+		userT := userI.(*models.User)
+		if userT.ID == user.ID {
+			resp.LoggedIn = true
+		}
 	}
 
+	resp.Code = http.StatusOK
+	resp.User = models.ToUserDTO(user)
 
-	c.JSON(http.StatusOK, UserResponse{
-		Success: true,
-		Error:   "",
-		Data:    gin.H{
-			"user" : user,
-			"logged_in" : logged_in,
-		},
-	})
+	c.JSON(resp.Code, resp)
+
 	return
 }
 
 func (u *UserController) All(c *gin.Context)  {
-	var limit int = 10
+
+	var resp response.UsersResponse
+
 	limit, err := strconv.Atoi(c.Param("limit"))
 	if err != nil {
 		limit = 10
@@ -179,38 +170,33 @@ func (u *UserController) All(c *gin.Context)  {
 
 	users, err := u.Service.GetAll(limit)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, UserResponse{
-			Success: false,
-			Error:   "something is wrong",
-			Data:    nil,
-		})
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.SomethingIsWrong
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
 
-	var usersDTO []models.UserDTO
 	for _, u := range users {
-		usersDTO = append(usersDTO, *models.ToUserDTO(&u))
+		resp.Users = append(resp.Users, models.ToUserDTO(&u))
 	}
 
-	c.JSON(http.StatusOK, UserResponse{
-		Success: true,
-		Error:   "",
-		Data:    usersDTO,
-	})
+	resp.Code = http.StatusOK
+	c.JSON(resp.Code, resp)
 
 }
 
 func (u *UserController) Update(c *gin.Context) {
+
+	var resp response.UserResponse
+
 	username := c.Param("username")
 
 	var userDTO models.UserDTO
 	err := c.ShouldBindJSON(&userDTO)
 	if err  != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, UserResponse{
-			Success: false,
-			Error:   "cannot bind json to object",
-			Data:    nil,
-		})
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.CannotBind
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
 
@@ -218,18 +204,15 @@ func (u *UserController) Update(c *gin.Context) {
 
 	updatedUser, err := u.Service.UpdateByUsername(username, user)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, UserResponse{
-			Success: false,
-			Error:   "cannot user update",
-			Data:    nil,
-		})
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.CannotUserUpdate
+		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}
 
-	c.JSON(http.StatusOK, UserResponse{
-		Success: true,
-		Error:   "",
-		Data:    models.ToUserDTO(updatedUser),
-	})
+	resp.Code = http.StatusOK
+	resp.User = models.ToUserDTO(updatedUser)
+	resp.LoggedIn = true
+	c.JSON(resp.Code, resp)
 
 }

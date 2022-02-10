@@ -9,7 +9,7 @@ type User struct {
 	GoogleID string `json:"google_id" gorm:"unique"`
 	Username string `json:"username" gorm:"unique"`
 	IsAdmin bool `json:"is_admin"`
-	Email string `json:"email" gorm:"primaryKey"`
+	Email string `json:"email" gorm:"unique"`
 	EmailVerified bool `json:"email_verified"`
 	Picture string `json:"picture"`
 	CreatedAt time.Time `json:"created_at"`
