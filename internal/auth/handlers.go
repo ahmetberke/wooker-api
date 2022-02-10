@@ -6,6 +6,7 @@ import (
 	"github.com/ahmetberke/wooker-api/internal/models"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -104,6 +105,7 @@ func (g Google) IsAdminOrLoggedUser(c *gin.Context)  {
 
 	userI, isExist := c.Get("x-user")
 	if !isExist {
+		log.Printf("deneme")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

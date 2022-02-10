@@ -47,6 +47,11 @@ func NewAPI(db *gorm.DB) (*api, error)  {
 	userController := controllers.UserController{Service: userService, GoogleAuth: oauth2}
 	a.UserRoutesInitialize(&userController)
 
+	wordRepository := repository.NewWordRepository(db)
+	wordService := service.NewWordService(wordRepository)
+	wordController := controllers.WordController{Service: wordService, Auth: oauth2}
+	a.WordRoutesInitialize(&wordController)
+
 	return &a, nil
 }
 

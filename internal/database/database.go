@@ -39,10 +39,14 @@ func migrations(db *gorm.DB)  {
 	if err != nil {
 		log.Printf("[ERROR] on db migrations (model: language)")
 	}
+	err = db.AutoMigrate(&models.Word{})
+	if err != nil {
+		log.Printf("[ERROR] on db migrations (model: word) - %v", err.Error())
+	}
 	log.Printf("Migrations finished")
 }
 
 func afterConnectionWorks(db *gorm.DB)  {
-	//ImplementLanguages("./internal/database/language.json", db)
+	ImplementLanguages("./internal/database/languages.json", db)
 }
 
