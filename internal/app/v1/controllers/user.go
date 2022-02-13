@@ -163,7 +163,7 @@ func (u *UserController) All(c *gin.Context)  {
 
 	var resp response.UsersResponse
 
-	limit, err := strconv.Atoi(c.Param("limit"))
+	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
 		limit = 10
 	}
