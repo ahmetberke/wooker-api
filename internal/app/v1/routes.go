@@ -30,6 +30,7 @@ func (a *api) UserRoutesInitialize(uc *controllers.UserController) {
 func (a *api) WordRoutesInitialize(wc *controllers.WordController)  {
 	word := a.Router.Group("/word")
 	{
+		word.GET("/", wc.All)
 		word.GET("/:id", wc.Get)
 		word.POST("/", wc.New)
 	}

@@ -44,6 +44,32 @@ func (w *WordController) Get(c *gin.Context)  {
 
 }
 
+func (w *WordController) All(c *gin.Context)  {
+
+	var resp response.WordsResponse
+
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		limit = 10
+	}
+
+	words, err := w.Service.GetAll(limit)
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.CannotWordsRetrieved
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+
+	resp.Code = http.StatusOK
+	for _, w := range words {
+		resp.Words = append(resp.Words, models.ToWordDTO(&w))
+	}
+
+	c.JSON(resp.Code, resp)
+
+}
+
 func (w *WordController) New(c *gin.Context)  {
 
 	var resp response.WordResponse
@@ -84,3 +110,4 @@ func (w *WordController) New(c *gin.Context)  {
 	c.JSON(resp.Code, resp)
 
 }
+

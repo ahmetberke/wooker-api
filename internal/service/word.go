@@ -17,6 +17,10 @@ func (w *WordService) FindByID(id uint) (*models.Word, error) {
 	return w.repository.FindByID(id)
 }
 
+func (w *WordService) GetAll(limit int) ([]models.Word, error) {
+	return w.repository.GetAll(limit)
+}
+
 func (w *WordService) Save(word *models.Word) (*models.Word, error) {
 	return w.repository.Save(word)
 }
