@@ -5,7 +5,7 @@ type UserResponse struct {
 	Email string `json:"email"`
 	VerifiedEmail bool `json:"verified_email"`
 	Picture string `json:"picture"`
-	Error *Error `json:"error"`
+	Error *Error   `json:"error"`
 }
 
 type Error struct {
