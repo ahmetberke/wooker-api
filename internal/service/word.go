@@ -7,21 +7,48 @@ import (
 
 type WordService struct {
 	repository *repository.WordRepository
+	userRepository *repository.UserRepository
+	languageRepository *repository.LanguageRepository
 }
 
-func NewWordService(repo *repository.WordRepository) *WordService {
-	return &WordService{repository: repo}
+func NewWordService(repo *repository.WordRepository, userRepo *repository.UserRepository, languageRepo *repository.LanguageRepository) *WordService {
+	return &WordService{
+		repository: repo,
+		userRepository: userRepo,
+		languageRepository: languageRepo,
+	}
 }
 
 func (w *WordService) FindByID(id uint) (*models.Word, error) {
 	return w.repository.FindByID(id)
 }
 
-func (w *WordService) GetAll(limit int) ([]models.Word, error) {
-	return w.repository.GetAll(limit)
+func (w *WordService) GetAll(limit int, username string, languageCode string) ([]models.Word, error) {
+	var userID uint = 0
+	var languageID uint = 0
+	if username != "" {
+		user, err := w.userRepository.FindByUsername(username)
+		if err != nil {
+			return []models.Word{}, err
+		}
+		userID = user.ID
+	}
+	if languageCode != "" {
+		language, err := w.languageRepository.FindByCode(languageCode)
+		if err != nil {
+			return []models.Word{}, err
+		}
+		languageID = language.ID
+	}
+	return w.repository.GetAll(limit, userID, languageID)
 }
 
 func (w *WordService) Save(word *models.Word) (*models.Word, error) {
+	lang, err := w.languageRepository.FindByCode(word.Language.Code)
+	if err != nil {
+		return nil, err
+	}
+	word.Language.ID = lang.ID
 	return w.repository.Save(word)
 }
 

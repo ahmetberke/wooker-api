@@ -28,21 +28,25 @@ func (w *WordRepository) FindByID(id uint) (*models.Word, error) {
 	return word, nil
 }
 
-func (w *WordRepository) GetAll(limit int) ([]models.Word, error) {
+func (w *WordRepository) GetAll(limit int, userID uint, languageID uint) ([]models.Word, error) {
 	var words []models.Word
-	err := w.db.Limit(limit).Find(&words).Error
-	if err != nil {
-		return words, err
+	tx := w.db.Limit(limit)
+	if userID != 0 {
+		tx.Where("user_id = ?", userID)
 	}
-	err = w.db.Preload("Language").Preload("User").Find(&words).Error
-	if err != nil {
-		return words, err
+	if languageID != 0 {
+		tx.Where("language_id = ?", languageID)
 	}
+	tx.Preload("User").Preload("Language").Find(&words)
 	return words, nil
 }
 
 func (w *WordRepository) Save(word *models.Word) (*models.Word, error) {
 	err := w.db.Create(&word).Error
+	if err != nil {
+		return nil, err
+	}
+	err = w.db.Preload("User").Preload("Language").Find(&word).Error
 	if err != nil {
 		return nil, err
 	}

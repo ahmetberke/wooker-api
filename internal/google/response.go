@@ -1,4 +1,4 @@
-package auth
+package google
 
 type UserResponse struct {
 	ID string `json:"id"`

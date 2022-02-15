@@ -16,14 +16,20 @@ func (a *api) HelloRouteInitialise()  {
 	}
 }
 
+func (a *api) AuthRoutesInitialize(ac *controllers.AuthController)  {
+	auth := a.Router.Group("/auth")
+	{
+		auth.GET("/google", ac.AuthenticationWithGoogle)
+		auth.GET("/url", ac.URL)
+	}
+}
+
 func (a *api) UserRoutesInitialize(uc *controllers.UserController) {
 	user := a.Router.Group("/user")
 	{
 		user.GET("/",uc.All)
-		user.GET("/auth", uc.Auth)
-		user.GET("/url", uc.URL)
 		user.GET("/:username", uc.Get)
-		user.PUT("/:username", uc.GoogleAuth.IsAdminOrLoggedUser, uc.Update)
+		user.PUT("/:username",a.Middleware.IsLoggedUserOrAdminChecking, uc.Update)
 	}
 }
 

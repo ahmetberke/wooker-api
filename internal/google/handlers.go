@@ -1,26 +1,25 @@
-package auth
+package google
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ahmetberke/wooker-api/internal/models"
-	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
-	"log"
 	"net/http"
-	"strings"
 )
 
-func (g Google) GenerateURL() string {
+func (g GoogleOuath2) GenerateURL() string {
+	// Generate a URL for login page
 	return g.Oauth2.AuthCodeURL(g.State)
 }
 
-func (g Google) GetToken(state string, code string) (*oauth2.Token, error)  {
+func (g *GoogleOuath2) GetToken(state string, code string) (*oauth2.Token, error)  {
 
+	// Checking whether the state received with the request is correct.
 	if state != g.State {
 		return nil, fmt.Errorf("invalid oauth state")
 	}
 
+	// Generating token with code
 	token, err := g.Oauth2.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		return nil, fmt.Errorf("code exchange failed: %s", err.Error())
@@ -30,8 +29,9 @@ func (g Google) GetToken(state string, code string) (*oauth2.Token, error)  {
 
 }
 
-func (g Google) GetUserData(accessToken string) (*UserResponse, error) {
+func (g *GoogleOuath2) GetUserData(accessToken string) (*UserResponse, error) {
 
+	// Pulling User Data from Google Service with token
 	resp, err := http.Get(g.DataURL + accessToken)
 
 	if err != nil {
@@ -42,6 +42,7 @@ func (g Google) GetUserData(accessToken string) (*UserResponse, error) {
 		_ = resp.Body.Close()
 	}()
 
+	// Decoding Response data to userResponse struct
 	var userResponse UserResponse
 	err = json.NewDecoder(resp.Body).Decode(&userResponse)
 	if err != nil {
@@ -56,7 +57,8 @@ func (g Google) GetUserData(accessToken string) (*UserResponse, error) {
 
 }
 
-func (g Google) Authorization (c *gin.Context) {
+/*
+func (g *GoogleOuath2) Authorization (c *gin.Context) {
 
 	tokenAr := strings.Split(c.GetHeader("authorization"), " ")
 	if len(tokenAr) <= 1 {
@@ -82,7 +84,7 @@ func (g Google) Authorization (c *gin.Context) {
 
 }
 
-func (g Google) IsAdmin(c *gin.Context)  {
+func (g *GoogleOuath2) IsAdmin(c *gin.Context)  {
 	userI, isExist := c.Get("x-user")
 	if !isExist {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -99,7 +101,7 @@ func (g Google) IsAdmin(c *gin.Context)  {
 
 }
 
-func (g Google) IsAdminOrLoggedUser(c *gin.Context)  {
+func (g *GoogleOuath2) IsAdminOrLoggedUser(c *gin.Context)  {
 
 	username := c.Param("username")
 
@@ -119,3 +121,4 @@ func (g Google) IsAdminOrLoggedUser(c *gin.Context)  {
 	c.Next()
 
 }
+*/

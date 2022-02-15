@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/ahmetberke/wooker-api/configs"
 	"github.com/ahmetberke/wooker-api/internal/app/v1/controllers"
-	"github.com/ahmetberke/wooker-api/internal/auth"
+	"github.com/ahmetberke/wooker-api/internal/app/v1/middleware"
+	"github.com/ahmetberke/wooker-api/internal/google"
 	"github.com/ahmetberke/wooker-api/internal/repository"
 	"github.com/ahmetberke/wooker-api/internal/service"
 	"github.com/gin-contrib/cors"
@@ -18,6 +19,7 @@ type api struct {
 	DB *gorm.DB
 	Engine *gin.Engine
 	Router *gin.RouterGroup
+	Middleware *middleware.Manager
 }
 
 func NewAPI(db *gorm.DB) (*api, error)  {
@@ -39,18 +41,25 @@ func NewAPI(db *gorm.DB) (*api, error)  {
 	a.Router = a.Engine.Group("/v1")
 
 	userRepository := repository.NewUserRepository(a.DB)
-	userService := service.NewUserService(userRepository)
-
-	oauth2 := auth.NewOauth2(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret, userService)
-	a.Router.Use(oauth2.Authorization)
-
-	userController := controllers.UserController{Service: userService, GoogleAuth: oauth2}
-	a.UserRoutesInitialize(&userController)
-
 	wordRepository := repository.NewWordRepository(db)
-	wordService := service.NewWordService(wordRepository)
-	wordController := controllers.WordController{Service: wordService, Auth: oauth2}
+	languageRepository := repository.NewLanguageRepository(a.DB)
+
+	userService := service.NewUserService(userRepository)
+	wordService := service.NewWordService(wordRepository, userRepository, languageRepository)
+
+	a.Middleware = middleware.NewManager(userService)
+
+	googleOa := google.NewGoogleOauth2(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret)
+
+	a.Router.Use(a.Middleware.Authorization)
+
+	userController := controllers.UserController{Service: userService}
+	wordController := controllers.WordController{Service: wordService}
+	authController := controllers.AuthController{UserService: userService, Google: googleOa}
+
+	a.UserRoutesInitialize(&userController)
 	a.WordRoutesInitialize(&wordController)
+	a.AuthRoutesInitialize(&authController)
 
 	return &a, nil
 }

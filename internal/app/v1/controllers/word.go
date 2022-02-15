@@ -1,19 +1,19 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/ahmetberke/wooker-api/internal/app/v1/errorss"
 	"github.com/ahmetberke/wooker-api/internal/app/v1/response"
-	"github.com/ahmetberke/wooker-api/internal/auth"
 	"github.com/ahmetberke/wooker-api/internal/models"
 	"github.com/ahmetberke/wooker-api/internal/service"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
 
 type WordController struct {
 	Service *service.WordService
-	Auth *auth.Google
 }
 
 func (w *WordController) Get(c *gin.Context)  {
@@ -53,7 +53,10 @@ func (w *WordController) All(c *gin.Context)  {
 		limit = 10
 	}
 
-	words, err := w.Service.GetAll(limit)
+	username := c.Query("username")
+	languageCode := c.Query("language-id")
+
+	words, err := w.Service.GetAll(limit, username, languageCode)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Error = errorss.CannotWordsRetrieved
@@ -94,12 +97,23 @@ func (w *WordController) New(c *gin.Context)  {
 
 	word := models.ToWord(wordDTO)
 	word.UserID = loggedUser.ID
-	word.LanguageID = wordDTO.Language.ID
 
 	wordS, err := w.Service.Save(word)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			resp.Code = http.StatusBadRequest
+			resp.Error = errorss.LanguageNotFound
+			c.AbortWithStatusJSON(resp.Code, resp)
+			return
+		}
+		if errorss.IsAlreadyExistsErr(err) {
+			resp.Code = http.StatusBadRequest
+			resp.Error = errorss.WordAlreadyExists
+			c.AbortWithStatusJSON(resp.Code, resp)
+			return
+		}
 		resp.Code = http.StatusBadRequest
-		resp.Error = errorss.UnableWordSaveToDB
+		resp.Error = errorss.SomethingIsWrong
 		c.AbortWithStatusJSON(resp.Code, resp)
 		return
 	}

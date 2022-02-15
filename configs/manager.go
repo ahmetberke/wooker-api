@@ -11,6 +11,7 @@ type manager struct {
 	DBCredentials *dbCredentials
 	HostCredentials *hostCredentials
 	Oauth2Credentials *oauth2Credentials
+	JWTSecretKey string
 }
 
 type  hostCredentials struct {
@@ -57,5 +58,7 @@ func (m *manager) EnvInitialise(path string) {
 		ClientID: os.Getenv("OAUTH2_GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("OAUTH2_GOOGLE_CLIENT_SECRET"),
 	}
+
+	m.JWTSecretKey = os.Getenv("JWT_SECRET_KEY")
 
 }

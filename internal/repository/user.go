@@ -16,7 +16,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 func (u *UserRepository) Save(user *models.User) (*models.User, error) {
-	err := u.db.Create(&user).Error
+	err := u.db.Create(&user).Preload("User").Error
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (u *UserRepository) GetAll(limit int) ([]models.User, error)  {
 }
 
 func (u *UserRepository) UpdateByUsername(username string, user *models.User) (*models.User, error)  {
-	err := u.db.Model(&user).Where("username = ?", username).Updates(user).Error
+	err := u.db.Model(&user).Where("username = ?", username).Updates(&user).Preload("User").Error
 	if err != nil {
 		return nil, err
 	}
