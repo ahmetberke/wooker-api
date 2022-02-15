@@ -10,7 +10,7 @@ Wooker API is the core backend for open source word book app.
 |Get Single|GET|/v1/users/:username/|
 |Update|PUT|/v1/users/:username|
 
-**GET ALL RESPONSE *Example***
+**GET ALL RESPONSE**
 ```json
 {
   "code": 200,
@@ -35,7 +35,7 @@ Wooker API is the core backend for open source word book app.
   ]
 }
 ```
-**GET SINGLE *Example***
+**GET SINGLE RESPONSE**
 ```json
 {
     "code": 200,
@@ -51,7 +51,12 @@ Wooker API is the core backend for open source word book app.
     "logged_in": true
 }
 ```
-**UPDATE *Example***
+**UPDATE BODY AND RESPONSE**
+```json
+{
+  "username" : "ahmet"
+}
+```
 ```json
 {
     "code": 200,
