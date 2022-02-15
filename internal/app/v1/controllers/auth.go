@@ -30,6 +30,13 @@ func (a *AuthController) URL(c *gin.Context) {
 	c.JSON(resp.Code, resp)
 }
 
+func NewAuthController(userService *service.UserService, googleOauth2 *google.GoogleOuath2) *AuthController {
+	return &AuthController{
+		UserService: userService,
+		Google:      googleOauth2,
+	}
+}
+
 func (a *AuthController) AuthenticationWithGoogle(c *gin.Context)  {
 	var resp response.AuthResponse
 

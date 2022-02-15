@@ -16,6 +16,12 @@ type UserController struct {
 	Service *service.UserService
 }
 
+func NewUserController(userService *service.UserService) *UserController {
+	return &UserController{
+		Service: userService,
+	}
+}
+
 func (u *UserController) Get(c *gin.Context)  {
 
 	var resp response.UserResponse

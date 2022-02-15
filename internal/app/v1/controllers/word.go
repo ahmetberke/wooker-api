@@ -16,6 +16,12 @@ type WordController struct {
 	Service *service.WordService
 }
 
+func NewWordController(wordService *service.WordService) *WordController {
+	return &WordController{
+		Service: wordService,
+	}
+}
+
 func (w *WordController) Get(c *gin.Context)  {
 
 	var resp response.WordResponse

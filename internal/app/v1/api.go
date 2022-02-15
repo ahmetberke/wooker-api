@@ -47,19 +47,19 @@ func NewAPI(db *gorm.DB) (*api, error)  {
 	userService := service.NewUserService(userRepository)
 	wordService := service.NewWordService(wordRepository, userRepository, languageRepository)
 
-	a.Middleware = middleware.NewManager(userService)
-
 	googleOa := google.NewGoogleOauth2(configs.Manager.Oauth2Credentials.ClientID, configs.Manager.Oauth2Credentials.ClientSecret)
+
+	a.Middleware = middleware.NewManager(userService)
 
 	a.Router.Use(a.Middleware.Authorization)
 
-	userController := controllers.UserController{Service: userService}
-	wordController := controllers.WordController{Service: wordService}
-	authController := controllers.AuthController{UserService: userService, Google: googleOa}
+	userController := controllers.NewUserController(userService)
+	wordController := controllers.NewWordController(wordService)
+	authController := controllers.NewAuthController(userService, googleOa)
 
-	a.UserRoutesInitialize(&userController)
-	a.WordRoutesInitialize(&wordController)
-	a.AuthRoutesInitialize(&authController)
+	a.UserRoutesInitialize(userController)
+	a.WordRoutesInitialize(wordController)
+	a.AuthRoutesInitialize(authController)
 
 	return &a, nil
 }
