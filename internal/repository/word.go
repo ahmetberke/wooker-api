@@ -53,8 +53,9 @@ func (w *WordRepository) Save(word *models.Word) (*models.Word, error) {
 	return word, nil
 }
 
-func (w *WordRepository) Delete(wordId uint) error {
-	err := w.db.Delete(&models.Word{ID: wordId}).Error
+func (w *WordRepository) Delete(userID uint, wordID uint) error {
+	var word models.Word
+	err := w.db.Where("user_id = ?", userID).Where("id = ?", wordID).Delete(&word).Error
 	if err != nil {
 		return err
 	}

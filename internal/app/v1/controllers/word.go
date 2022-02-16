@@ -131,3 +131,44 @@ func (w *WordController) New(c *gin.Context)  {
 
 }
 
+func (w *WordController) Delete(c *gin.Context) {
+	var resp response.WordResponse
+
+	userI, isExists := c.Get("x-user")
+	if !isExists {
+		resp.Code = http.StatusUnauthorized
+		resp.Error = errorss.Unauthorized
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+	loggedUser := userI.(*models.User)
+
+	idI, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.InvalidWordID
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+	if idI < 0 {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.InvalidWordID
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+
+	id := uint(idI)
+
+	err = w.Service.Delete(loggedUser.ID, id)
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.WordNotFound
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+
+	resp.Code = http.StatusOK
+	c.JSON(resp.Code, resp)
+	return
+
+}

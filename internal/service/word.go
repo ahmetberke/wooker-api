@@ -52,6 +52,6 @@ func (w *WordService) Save(word *models.Word) (*models.Word, error) {
 	return w.repository.Save(word)
 }
 
-func (w *WordService) Delete(wordId uint) error {
-	return w.repository.Delete(wordId)
+func (w *WordService) Delete(userID uint, wordID uint) error {
+	return w.repository.Delete(userID, wordID)
 }
