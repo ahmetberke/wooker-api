@@ -55,3 +55,14 @@ func (w *WordService) Save(word *models.Word) (*models.Word, error) {
 func (w *WordService) Delete(userID uint, wordID uint) error {
 	return w.repository.Delete(userID, wordID)
 }
+
+func (w *WordService) Update(word *models.Word) (*models.Word, error) {
+	if word.Language.Code != "" {
+		lang, err := w.languageRepository.FindByCode(word.Language.Code)
+		if err != nil {
+			return nil, err
+		}
+		word.Language.ID = lang.ID
+	}
+	return w.repository.Update(word)
+}

@@ -61,3 +61,11 @@ func (w *WordRepository) Delete(userID uint, wordID uint) error {
 	}
 	return nil
 }
+
+func (w* WordRepository) Update(word *models.Word) (*models.Word, error) {
+	err := w.db.Where("user_id = ?", word.UserID).Where("id = ?", word.ID).Updates(&word).Error
+	if err != nil {
+		return nil, err
+	}
+	return word, err
+}

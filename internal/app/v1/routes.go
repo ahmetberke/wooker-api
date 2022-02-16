@@ -28,5 +28,6 @@ func (a *api) WordRoutesInitialize(wc *controllers.WordController)  {
 		word.GET("/:id", wc.Get)
 		word.POST("/", wc.New)
 		word.DELETE("/:id", wc.Delete)
+		word.PUT("/:id", wc.Update)
 	}
 }

@@ -172,3 +172,59 @@ func (w *WordController) Delete(c *gin.Context) {
 	return
 
 }
+
+func (w *WordController) Update(c *gin.Context) {
+	var resp response.WordResponse
+
+	userI, isExists := c.Get("x-user")
+	if !isExists {
+		resp.Code = http.StatusUnauthorized
+		resp.Error = errorss.Unauthorized
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+	loggedUser := userI.(*models.User)
+
+	idI, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.InvalidWordID
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+	if idI < 0 {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.InvalidWordID
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+
+	id := uint(idI)
+
+	var wordDTO models.WordDTO
+	err = c.ShouldBindJSON(&wordDTO)
+	if err  != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.CannotBind
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+
+	word := models.ToWord(&wordDTO)
+	word.UserID = loggedUser.ID
+	word.ID = id
+
+	wordU, err := w.Service.Update(word)
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Error = errorss.WordNotUpdate
+		c.AbortWithStatusJSON(resp.Code, resp)
+		return
+	}
+
+	resp.Code = http.StatusOK
+	resp.Word = models.ToWordDTO(wordU)
+	c.JSON(resp.Code, resp)
+	return
+
+}
