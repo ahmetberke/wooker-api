@@ -34,8 +34,8 @@ func (u *UserService) FindByGoogleID(id string) (*models.User, error)  {
 	return u.repository.FindByGoogleID(id)
 }
 
-func (u *UserService) GetAll(limit int, search string) ([]models.User, error)  {
-	return u.repository.GetAll(limit, search)
+func (u *UserService) GetAll(limit int, search string, preAdded bool) ([]models.User, error)  {
+	return u.repository.GetAll(limit, search, preAdded)
 }
 
 func (u *UserService) UpdateByUsername(username string, user *models.User) (*models.User, error) {

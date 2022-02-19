@@ -73,7 +73,12 @@ func (u *UserController) All(c *gin.Context)  {
 		limit = 10
 	}
 
-	users, err := u.Service.GetAll(limit, search)
+	var preAdded bool = false
+	if c.Query("preAdded") == "true" {
+		preAdded = true
+	}
+
+	users, err := u.Service.GetAll(limit, search, preAdded)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Error = errorss.SomethingIsWrong

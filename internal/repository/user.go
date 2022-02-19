@@ -59,17 +59,27 @@ func (u *UserRepository) FindByGoogleID(id string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) GetAll(limit int, search string) ([]models.User, error)  {
+func (u *UserRepository) GetAll(limit int, search string, preAdded bool) ([]models.User, error)  {
+
 	var users []models.User
+
 	tx := u.db.Limit(limit)
 	if search != "" {
 		tx.Where("username LIKE ?", search+"%")
 	}
+
+	if preAdded {
+		tx.Order("created_at asc")
+	}else {
+		tx.Order("created_at desc")
+	}
+
 	err := tx.Find(&users).Error
 	if err != nil {
 		return users, err
 	}
 	return users, nil
+
 }
 
 func (u *UserRepository) UpdateByUsername(username string, user *models.User) (*models.User, error)  {
