@@ -10,7 +10,7 @@ type UserResponse struct {
 
 type UsersResponse struct {
 	Response
-	Users []*models.UserDTO `json:"users"`
+	Users []models.UserDTO `json:"users"`
 }
 
 type AuthResponse struct {

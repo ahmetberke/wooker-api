@@ -72,7 +72,7 @@ func (w *WordController) All(c *gin.Context)  {
 
 	resp.Code = http.StatusOK
 	for _, w := range words {
-		resp.Words = append(resp.Words, models.ToWordDTO(&w))
+		resp.Words = append(resp.Words, *models.ToWordDTO(&w))
 	}
 
 	c.JSON(resp.Code, resp)

@@ -41,3 +41,13 @@ func (l *LanguageRepository) FindByCode(code string) (*models.Language, error)  
 	}
 	return language, err
 }
+
+func (l *LanguageRepository) GetAll(limit int, search string) ([]models.Language, error)  {
+	var languages []models.Language
+	tx := l.db.Limit(limit)
+	if search != "" {
+		tx.Where("name LIKE ? OR code LIKE ? OR native_name LIKE ?", search+"%", search+"%", search+"%")
+	}
+	err := tx.Find(&languages).Error
+	return languages, err
+}

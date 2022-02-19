@@ -82,7 +82,7 @@ func (u *UserController) All(c *gin.Context)  {
 	}
 
 	for _, u := range users {
-		resp.Users = append(resp.Users, models.ToUserDTO(&u))
+		resp.Users = append(resp.Users, *models.ToUserDTO(&u))
 	}
 
 	resp.Code = http.StatusOK

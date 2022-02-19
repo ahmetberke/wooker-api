@@ -26,3 +26,7 @@ func (l *LanguageService) FindByName(name string) (*models.Language, error)  {
 func (l *LanguageService) FindByCode(code string) (*models.Language, error)  {
 	return l.repository.FindByCode(code)
 }
+
+func (l *LanguageService) GetAll(limit int, search string) ([]models.Language, error) {
+	return l.repository.GetAll(limit, search)
+}

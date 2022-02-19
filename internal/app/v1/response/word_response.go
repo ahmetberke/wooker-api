@@ -9,5 +9,5 @@ type WordResponse struct {
 
 type WordsResponse struct {
 	Response
-	Words []*models.WordDTO `json:"words"`
+	Words []models.WordDTO `json:"words"`
 }

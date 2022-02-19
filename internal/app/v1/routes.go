@@ -31,3 +31,10 @@ func (a *api) WordRoutesInitialize(wc *controllers.WordController)  {
 		word.PUT("/:id", wc.Update)
 	}
 }
+
+func (a *api) LanguageRoutesInitialize(lc *controllers.LanguageController)  {
+	language := a.Router.Group("/languages")
+	{
+		language.GET("/", lc.All)
+	}
+}
