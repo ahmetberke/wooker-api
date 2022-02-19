@@ -59,9 +59,13 @@ func (u *UserRepository) FindByGoogleID(id string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) GetAll(limit int) ([]models.User, error)  {
+func (u *UserRepository) GetAll(limit int, search string) ([]models.User, error)  {
 	var users []models.User
-	err := u.db.Limit(limit).Find(&users).Error
+	tx := u.db.Limit(limit)
+	if search != "" {
+		tx.Where("username LIKE ?", search+"%")
+	}
+	err := tx.Find(&users).Error
 	if err != nil {
 		return users, err
 	}

@@ -67,12 +67,13 @@ func (u *UserController) All(c *gin.Context)  {
 
 	var resp response.UsersResponse
 
+	search := c.Query("search")
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
 		limit = 10
 	}
 
-	users, err := u.Service.GetAll(limit)
+	users, err := u.Service.GetAll(limit, search)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Error = errorss.SomethingIsWrong
