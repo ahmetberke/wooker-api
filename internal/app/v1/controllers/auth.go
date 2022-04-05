@@ -122,7 +122,7 @@ func (a *AuthController) AuthenticationWithGoogle(c *gin.Context)  {
 	}
 
 	// generating new token
-	token, err := jwt_token.GenerateToken(cUser.ID, configs.Manager.JWTSecretKey)
+	token, err := jwt_token.GenerateToken(okUser.ID, configs.Manager.JWTSecretKey)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Error = err.Error()

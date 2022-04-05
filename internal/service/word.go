@@ -23,7 +23,7 @@ func (w *WordService) FindByID(id uint) (*models.Word, error) {
 	return w.repository.FindByID(id)
 }
 
-func (w *WordService) GetAll(limit int, username string, languageCode string) ([]models.Word, error) {
+func (w *WordService) GetAll(limit int, username string, languageCode string, different bool) ([]models.Word, error) {
 	var userID uint = 0
 	var languageID uint = 0
 	if username != "" {
@@ -40,7 +40,7 @@ func (w *WordService) GetAll(limit int, username string, languageCode string) ([
 		}
 		languageID = language.ID
 	}
-	return w.repository.GetAll(limit, userID, languageID)
+	return w.repository.GetAll(limit, userID, languageID, different)
 }
 
 func (w *WordService) Save(word *models.Word) (*models.Word, error) {

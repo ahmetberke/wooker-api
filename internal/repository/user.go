@@ -71,7 +71,7 @@ func (u *UserRepository) GetAll(limit int, search string, preAdded bool) ([]mode
 	if preAdded {
 		tx.Order("created_at asc")
 	}else {
-		tx.Order("created_at desc")
+		tx.Order("created_at descg")
 	}
 
 	err := tx.Find(&users).Error

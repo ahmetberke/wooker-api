@@ -4,7 +4,7 @@ import "time"
 
 type Word struct {
 	ID uint `json:"id" gorm:"primaryKey"`
-	Name string `json:"name" gorm:"unique"`
+	Name string `json:"name"`
 	Mean string `json:"mean"`
 	Story string `json:"story"`
 	UserID uint `json:"user_id"`

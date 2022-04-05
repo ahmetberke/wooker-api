@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/ahmetberke/wooker-api/internal/models"
+	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -28,9 +29,12 @@ func (w *WordRepository) FindByID(id uint) (*models.Word, error) {
 	return word, nil
 }
 
-func (w *WordRepository) GetAll(limit int, userID uint, languageID uint) ([]models.Word, error) {
+func (w *WordRepository) GetAll(limit int, userID uint, languageID uint, different bool) ([]models.Word, error) {
 	var words []models.Word
 	tx := w.db.Limit(limit)
+	if different {
+		tx.Distinct("name")
+	}
 	if userID != 0 {
 		tx.Where("user_id = ?", userID)
 	}
@@ -42,7 +46,11 @@ func (w *WordRepository) GetAll(limit int, userID uint, languageID uint) ([]mode
 }
 
 func (w *WordRepository) Save(word *models.Word) (*models.Word, error) {
-	err := w.db.Create(&word).Error
+	err := w.db.Where("name = ?", word.Name).Where("user_id = ?", word.UserID).Where("language_id = ?", word.Language.ID).First(&word).Error
+	if err == nil {
+		return nil, &pgconn.PgError{}
+	}
+	err = w.db.Create(&word).Error
 	if err != nil {
 		return nil, err
 	}

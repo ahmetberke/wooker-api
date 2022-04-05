@@ -59,10 +59,15 @@ func (w *WordController) All(c *gin.Context)  {
 		limit = 10
 	}
 
+	different := false
+	if c.Query("different") == "true" {
+		different = true
+	}
+
 	username := c.Query("username")
 	languageCode := c.Query("language-id")
 
-	words, err := w.Service.GetAll(limit, username, languageCode)
+	words, err := w.Service.GetAll(limit, username, languageCode, different)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Error = errorss.CannotWordsRetrieved

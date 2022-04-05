@@ -47,6 +47,6 @@ func migrations(db *gorm.DB)  {
 }
 
 func afterConnectionWorks(db *gorm.DB)  {
-	//	ImplementLanguages("./internal/database/languages.json", db)
+	// ImplementLanguages("./internal/database/languages.json", db)
 }
 
